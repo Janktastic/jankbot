@@ -1,3 +1,5 @@
 {
-    "discordBotToken": "foobar"
+    "discordBotToken": "foobar",
+    "googleApiKey" : "foobar",
+    "commandPrefix": "!"
 }
