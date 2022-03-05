@@ -70,6 +70,7 @@ public class JankBot extends ListenerAdapter {
 
   private JankBot() throws IOException {
     printBotBanner();
+    System.out.println("Initializing JankBot...");
     commandPrefix = jankBotConfig.getCommandPrefix();
     this.musicManagers = new HashMap<>();
 
