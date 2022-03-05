@@ -1,6 +1,6 @@
- ╦┌─┐┌┐┌┬┌─╔╗ ┌─┐┌┬┐
- ║├─┤│││├┴┐╠╩╗│ │ │ 
-╚╝┴ ┴┘└┘┴ ┴╚═╝└─┘ ┴ 
+	 ╦┌─┐┌┐┌┬┌─╔╗ ┌─┐┌┬┐
+	 ║├─┤│││├┴┐╠╩╗│ │ │ 
+	╚╝┴ ┴┘└┘┴ ┴╚═╝└─┘ ┴ 
 
 Discord music bot using JDA and LavaPlayer.
 Initially based off of LavaPlayer's JDA Integration Demo
