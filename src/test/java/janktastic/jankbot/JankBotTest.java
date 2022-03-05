@@ -4,17 +4,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-/**
- * Unit test for simple App.
- */
-public class AppTest 
+//I'm SURE we'll write tests later
+public class JankBotTest 
 {
-    /**
-     * Rigorous Test :-)
-     */
     @Test
-    public void shouldAnswerWithTrue()
-    {
+    public void dummyTest() {
+        //Tests? Tests? We don't need no stinken tests!
         assertTrue( true );
     }
 }

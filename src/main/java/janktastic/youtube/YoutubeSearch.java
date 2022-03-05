@@ -43,19 +43,14 @@ public class YoutubeSearch {
 			search.setType("video");
 			search.setFields("items(id(videoId),snippet(title,description,thumbnails/default/url))");
 			search.setMaxResults((long) 10);
-			// search.setOrder(SearchSetting.getInstance().getOrder());
-			// search.setSafeSearch(SearchSetting.getInstance().getSafeSearch());
-			// search.setVideoDefinition(SearchSetting.getInstance().getVideoDefinition());
-			// search.setVideoDuration(SearchSetting.getInstance().getVideoDuration());
-			// search.setVideoType(SearchSetting.getInstance().getVideoType());
 			return search.execute();
 		} catch (GoogleJsonResponseException e) {
 			System.out.println(
-					"There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
+					"YoutubeSearch service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
 		} catch (IOException e) {
-			System.out.println("There was an IO error: " + e.getCause() + " : " + e.getMessage());
+			System.out.println("YOutubeSearch IO error: " + e.getCause() + " : " + e.getMessage());
 		} catch (Throwable t) {
-			System.out.println(t);
+			System.out.println("YoutubeSearch error" + t);
 		}
 
 		return null;

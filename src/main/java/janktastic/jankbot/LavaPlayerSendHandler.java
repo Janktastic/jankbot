@@ -7,21 +7,14 @@ import net.dv8tion.jda.api.audio.AudioSendHandler;
 
 import java.nio.ByteBuffer;
 
-/**
- * This is a wrapper around AudioPlayer which makes it behave as an
- * AudioSendHandler for JDA. As JDA calls canProvide before every call to
- * provide20MsAudio(), we pull the frame in canProvide() and use the frame we
- * already pulled in provide20MsAudio().
- */
-public class AudioPlayerSendHandler implements AudioSendHandler {
+//Implementation of JDA AudioSendHandler that wraps lava audio player
+public class LavaPlayerSendHandler implements AudioSendHandler {
 	private final AudioPlayer audioPlayer;
 	private final ByteBuffer buffer;
 	private final MutableAudioFrame frame;
 
-	/**
-	 * @param audioPlayer Audio player to wrap.
-	 */
-	public AudioPlayerSendHandler(AudioPlayer audioPlayer) {
+	//wrap lava audioplayer
+	public LavaPlayerSendHandler(AudioPlayer audioPlayer) {
 		this.audioPlayer = audioPlayer;
 		this.buffer = ByteBuffer.allocate(1024);
 		this.frame = new MutableAudioFrame();
@@ -36,11 +29,12 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
 
 	@Override
 	public ByteBuffer provide20MsAudio() {
-		// flip to make it a read buffer
+	  //flip byte buffer to read mode
 		((Buffer) buffer).flip();
 		return buffer;
 	}
 
+	//youtube already provides audio in opus format, tell jda it doesnt need to encode
 	@Override
 	public boolean isOpus() {
 		return true;
