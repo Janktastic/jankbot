@@ -4,12 +4,12 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
 //container for player & queue manager
-public class GuildMusicManager {
+public class ServerMusicManager {
 
 	private final AudioPlayer player;
 	private final QueueManager queueManager;
 
-	public GuildMusicManager(AudioPlayerManager manager) {
+	public ServerMusicManager(AudioPlayerManager manager) {
 		player = manager.createPlayer();
 		queueManager = new QueueManager(player);
 		player.addListener(queueManager);

@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Nonnull;
-
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -29,7 +27,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -37,18 +34,17 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
-public class JankBot extends ListenerAdapter {
+public class ServerEventHandler extends ListenerAdapter {
   
-  private static JankBotConfig jankBotConfig;
+  private JankBotConfig jankBotConfig;
   //string at the beginning of a message that lets bot know its a command
   private String commandPrefix;
-  private static String discordToken;
   
-  private static YoutubeSearch youtubeSearch;
+  private final YoutubeSearch youtubeSearch;
   private final AudioPlayerManager playerManager;
   
   //map of guild ids to player/queuemanager container
-  private final Map<Long, GuildMusicManager> musicManagers;
+  private final Map<Long, ServerMusicManager> musicManagers;
   
   //map of discord user ids to their last search results
   private Map<Long, List<String>> userSearchMap = new HashMap<>();
@@ -56,28 +52,18 @@ public class JankBot extends ListenerAdapter {
   //discord codeblock markup for pretty printing bot responses
   private static final String CODEBLOCK = "```";
 
-  public static void main(String[] args) throws Exception {
-    //TODO: allow passing in config file path
-    jankBotConfig = JankBotConfigFactory.buildConfig();
-    youtubeSearch = new YoutubeSearch(jankBotConfig.getGoogleApiKey());
-    discordToken = jankBotConfig.getDiscordBotToken();
+  
+public ServerEventHandler(JankBotConfig jankBotConfig, YoutubeSearch youtubeSearch) {
+  this.youtubeSearch = youtubeSearch;
+  this.jankBotConfig = jankBotConfig;
+  commandPrefix = jankBotConfig.getCommandPrefix();
+  musicManagers = new HashMap<>();
 
-    JDABuilder.create(discordToken, GUILD_MESSAGES, GUILD_VOICE_STATES).addEventListeners(new JankBot())
-    //disable jda cache for now to prevent warnings on startup
-      .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS).build();
-  }
+  playerManager = new DefaultAudioPlayerManager();
+  AudioSourceManagers.registerRemoteSources(playerManager);
+  AudioSourceManagers.registerLocalSource(playerManager);
+}
 
-
-  private JankBot() throws IOException {
-    printBotBanner();
-    System.out.println("Initializing JankBot...");
-    commandPrefix = jankBotConfig.getCommandPrefix();
-    this.musicManagers = new HashMap<>();
-
-    this.playerManager = new DefaultAudioPlayerManager();
-    AudioSourceManagers.registerRemoteSources(playerManager);
-    AudioSourceManagers.registerLocalSource(playerManager);
-  }
   
   @Override
   public void onReady(ReadyEvent event) {
@@ -90,12 +76,12 @@ public class JankBot extends ListenerAdapter {
     }
   }
   //returns the queue/player container for a guild(server) and sets the JDA SendingHandler to the guild specific lavaplayer sendhandler
-  private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
+  private synchronized ServerMusicManager getGuildAudioPlayer(Guild guild) {
     long guildId = Long.parseLong(guild.getId());
-    GuildMusicManager musicManager = musicManagers.get(guildId);
+    ServerMusicManager musicManager = musicManagers.get(guildId);
 
     if (musicManager == null) {
-      musicManager = new GuildMusicManager(playerManager);
+      musicManager = new ServerMusicManager(playerManager);
       musicManagers.put(guildId, musicManager);
     }
 
@@ -108,59 +94,15 @@ public class JankBot extends ListenerAdapter {
   //if command prefix detected attempt to execute the requested command
   @Override
   public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-    String[] message = event.getMessage().getContentRaw().split(" ", 2);
     
-    //is the first part of the message a command?
-    if (message[0].startsWith(commandPrefix)) {
-      //split the commandPrefix from the command
-      String command = message[0].split(commandPrefix)[1];
-      
-      //split args, not really necessary now as we're treating everything after the command as one arg...
-      List<String> args = new ArrayList<>();
-      for (int i = 1; i < message.length; i++) {
-        args.add(message[i]);
-      }
-
-      User user = event.getAuthor();
-      long userId = user.getIdLong();
-      TextChannel textChannel = event.getChannel();
-      VoiceChannel voiceChannel = findVoiceChannelOfUser(event.getGuild(), userId);
-
-      System.out.println(args.size());
-      if ("play".equals(command) && args.size() == 1) {
-        System.out.println("calling loadAndPlay");
-        loadAndPlay(textChannel, args.get(0), voiceChannel);
-      } else if ("skip".equals(command)) {
-        skipTrack(textChannel);
-      } else if ("stop".equals(command)) {
-        stopPlayback(textChannel);
-      } else if ("clear".equals(command)) {
-        emptyQueue(textChannel);
-      } else if ("search".equals(command)) {
-        search(textChannel, userId, args.get(0));
-      } else if ("help".equals(command) || "commands".equals(command)) {
-        printHelp(textChannel, user.getName());
-      } else if ("queue".equals(command)) {
-        printQueue(textChannel);
-      } else if ("leave".equals(command)) {
-        leaveVoice(event.getGuild());
-      }
-      //if command is a single digit then its a search playback request
-      else if (command.length() == 1 && Character.isDigit(command.charAt(0))) {
-        //check to make sure the requesting user has a search list to play from
-        if (userSearchMap.containsKey(userId) && !userSearchMap.isEmpty()) {
-          //generate youtube link
-          String videoId = userSearchMap.get(userId).get(Integer.valueOf(command));
-          loadAndPlay(textChannel, youtubeSearch.getVideoUrl(videoId), voiceChannel);
-        }
-      }
-    }
+    
+  
 
     super.onGuildMessageReceived(event);
   }
 
   public void printQueue(TextChannel textChannel) {
-    final GuildMusicManager musicManager = getGuildAudioPlayer(textChannel.getGuild());
+    final ServerMusicManager musicManager = getGuildAudioPlayer(textChannel.getGuild());
     List<String> songTitles = musicManager.getQueueManager().getQueueTitles();
     String header = "Currently Queued:\n";
     String queueString = "";
@@ -227,13 +169,13 @@ public class JankBot extends ListenerAdapter {
       System.out.println(playRequest);
     }
 
-    final GuildMusicManager musicManager = getGuildAudioPlayer(textChannel.getGuild());
+    final ServerMusicManager musicManager = getGuildAudioPlayer(textChannel.getGuild());
     JankAudioLoadResultHandler audioLoadHandler = new JankAudioLoadResultHandler(this, playRequest, musicManager, textChannel,
         voiceChannel);
     playerManager.loadItemOrdered(musicManager, playRequest, audioLoadHandler);
   }
 
-  public void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
+  public void play(Guild guild, ServerMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
     System.out.println("in play");
     System.out.println("channel: " + voiceChannel.getName());
     connectToVoiceChannel(guild.getAudioManager(), voiceChannel);
@@ -242,21 +184,21 @@ public class JankBot extends ListenerAdapter {
   }
 
   public void skipTrack(TextChannel channel) {
-    GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    ServerMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.getQueueManager().nextTrack();
 
     channel.sendMessage("Skipped to next track.").queue();
   }
 
   public void stopPlayback(TextChannel channel) {
-    GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    ServerMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.getQueueManager().stop();
 
     channel.sendMessage("Playback stopped.").queue();
   }
 
   public void emptyQueue(TextChannel channel) {
-    GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    ServerMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.getQueueManager().clearQueue();
     channel.sendMessage("Playback queue cleared.").queue();
   }
@@ -302,16 +244,5 @@ public class JankBot extends ListenerAdapter {
     return CODEBLOCK + text + CODEBLOCK;
   }
   
-  //gotta have a sweet ascii banner or what are we even doing in life?
-  private void printBotBanner() {
-    InputStream is = getClass().getClassLoader().getResourceAsStream("banner");
-    byte[] encoded;
-    try {
-      encoded = is.readAllBytes();
-    } catch (IOException e) {
-      return; //guess we're not printing a dope ascii banner to the console?
-    }
-    String banner = new String(encoded, StandardCharsets.UTF_8);
-    System.out.println(banner);
-  }
+
 }

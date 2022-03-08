@@ -14,11 +14,11 @@ public class JankAudioLoadResultHandler implements AudioLoadResultHandler {
 	
 	private TextChannel textChannel;
 	private VoiceChannel voiceChannel;
-	private GuildMusicManager musicManager;
-	private JankBot bot;
+	private ServerMusicManager musicManager;
+	private ServerEventHandler bot;
 	private String trackUrl;
 	
-	public JankAudioLoadResultHandler(JankBot bot, String trackUrl, GuildMusicManager musicManager, TextChannel textChannel, VoiceChannel voiceChannel) {
+	public JankAudioLoadResultHandler(ServerEventHandler bot, String trackUrl, ServerMusicManager musicManager, TextChannel textChannel, VoiceChannel voiceChannel) {
 		this.bot = bot;
 		this.trackUrl = trackUrl;
 		this.musicManager = musicManager;
