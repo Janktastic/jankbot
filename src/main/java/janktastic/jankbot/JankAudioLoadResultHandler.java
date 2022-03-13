@@ -1,12 +1,10 @@
 package janktastic.jankbot;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import janktastic.jankbot.command.JankBotCommandRunner;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
@@ -15,10 +13,10 @@ public class JankAudioLoadResultHandler implements AudioLoadResultHandler {
 	private TextChannel textChannel;
 	private VoiceChannel voiceChannel;
 	private ServerMusicManager musicManager;
-	private ServerEventHandler bot;
+	private JankBotCommandRunner bot;
 	private String trackUrl;
 	
-	public JankAudioLoadResultHandler(ServerEventHandler bot, String trackUrl, ServerMusicManager musicManager, TextChannel textChannel, VoiceChannel voiceChannel) {
+	public JankAudioLoadResultHandler(JankBotCommandRunner bot, String trackUrl, ServerMusicManager musicManager, TextChannel textChannel, VoiceChannel voiceChannel) {
 		this.bot = bot;
 		this.trackUrl = trackUrl;
 		this.musicManager = musicManager;
