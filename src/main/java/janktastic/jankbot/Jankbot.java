@@ -34,15 +34,13 @@ public class Jankbot {
   }
 
   
-  
-  // gotta have a sweet ascii banner or what are we even doing in life?
   private static void printBotBanner() {
     InputStream is = new Jankbot().getClass().getClassLoader().getResourceAsStream("banner");
     byte[] encoded;
     try {
       encoded = is.readAllBytes();
     } catch (IOException e) {
-      return; // guess we're not printing a dope ascii banner to the console?
+      return;
     }
     String banner = new String(encoded, StandardCharsets.UTF_8);
     System.out.println(banner);

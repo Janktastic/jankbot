@@ -34,7 +34,7 @@ public class YoutubeSearch {
     }).setApplicationName("JankBot").build();
   }
 
-  public SearchListResponse search(String queryTerm) {
+  public SearchListResponse search(String queryTerm, int maxResults) {
 
     try {
       YouTube.Search.List search = youtube.search().list("id,snippet");
@@ -42,7 +42,7 @@ public class YoutubeSearch {
       search.setQ(queryTerm);
       search.setType("video");
       search.setFields("items(id(videoId),snippet(title,description,thumbnails/default/url))");
-      search.setMaxResults((long) 10);
+      search.setMaxResults((long) maxResults);
       return search.execute();
     } catch (GoogleJsonResponseException e) {
       System.out.println("YoutubeSearch service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
