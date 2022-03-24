@@ -3,6 +3,7 @@ package janktastic.jankbot.config;
 public class JankBotConfig {
 
 	private String discordBotToken;
+  // string at the beginning of a message that signifies its a command
 	private String commandPrefix;
 	private String googleApiKey;
 

@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class Jankbot {
   private static JankBotConfig jankBotConfig;
-  // string at the beginning of a message that lets bot know its a command
   private static String discordToken;
   private static YoutubeSearch youtubeSearch;
 

@@ -1,10 +1,10 @@
 package janktastic.jankbot.command.commands;
 
-import janktastic.jankbot.command.AbstractAudioCommand;
+import janktastic.jankbot.command.AbstractPlayCommand;
 import janktastic.jankbot.command.CommandType;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-public class PlayCommand extends AbstractAudioCommand{
+public class PlayCommand extends AbstractPlayCommand{
 
   @Override
   public void run() {

@@ -15,7 +15,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import janktastic.jankbot.JankBotUtil;
 import janktastic.youtube.YoutubeSearch;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -102,6 +101,10 @@ public class DiscordAudioManager {
 
   public List<String> getLatestSearchResultForUser(Long userId) {
     return userSearchMap.get(userId);
+  }
+  
+  public AudioTrack getCurrentTrack(Guild server) {
+    return getAudioQueue(server).getCurrentTrack();
   }
   
   private synchronized AudioPlayer getAudioPlayer(Guild server) {

@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class AudioQueueManager extends AudioEventAdapter {
   private final AudioPlayer player;
   private final BlockingQueue<AudioTrack> queue;
+  private AudioTrack currentTrack;
 
   public AudioQueueManager(AudioPlayer player) {
     this.player = player;
@@ -23,11 +24,14 @@ public class AudioQueueManager extends AudioEventAdapter {
   public void queue(AudioTrack track) {
     if (!player.startTrack(track, true)) {
       queue.offer(track);
+    } else {
+      currentTrack = track;
     }
   }
 
   public void nextTrack() {
-    player.startTrack(queue.poll(), false);
+    currentTrack = queue.poll();
+    player.startTrack(currentTrack, false);
   }
   
   public void stop() {
@@ -42,6 +46,8 @@ public class AudioQueueManager extends AudioEventAdapter {
   public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
     if (endReason.mayStartNext) {
       nextTrack();
+    } else {
+      currentTrack = null;
     }
   }
   
@@ -60,5 +66,9 @@ public class AudioQueueManager extends AudioEventAdapter {
       titleList.add(track.getInfo().title);
     }
     return titleList;
+  }
+  
+  public AudioTrack getCurrentTrack() {
+    return currentTrack;
   }
 }

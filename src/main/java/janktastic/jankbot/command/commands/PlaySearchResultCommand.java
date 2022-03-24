@@ -3,11 +3,11 @@ package janktastic.jankbot.command.commands;
 import java.util.List;
 
 import janktastic.jankbot.JankBotUtil;
-import janktastic.jankbot.command.AbstractAudioCommand;
+import janktastic.jankbot.command.AbstractPlayCommand;
 import janktastic.jankbot.command.CommandType;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-public class PlaySearchResultCommand extends AbstractAudioCommand{
+public class PlaySearchResultCommand extends AbstractPlayCommand{
 
   @Override
   public void run() {
@@ -25,7 +25,7 @@ public class PlaySearchResultCommand extends AbstractAudioCommand{
       discordAudioManager.loadAndPlay(textChannel, JankBotUtil.getYoutubeUrl(videoId), voiceChannel);
     }
     else {
-      textChannel.sendMessage("Invalid search result requested.").queue();
+      textChannel.sendMessage("Invalid search result requested.  Maybe you should try making sense?").queue();
       return;
     }
   }
