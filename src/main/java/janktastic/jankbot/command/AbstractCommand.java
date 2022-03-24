@@ -2,11 +2,11 @@ package janktastic.jankbot.command;
 
 import java.util.Map;
 
-import janktastic.jankbot.DiscordAudioManager;
+import janktastic.jankbot.audio.DiscordAudioManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 
-public abstract class AbstractJankBotCommand {
+public abstract class AbstractCommand {
   protected Map<CommandOption, String> options;
   protected String arg;
   // the user who is executing the command
@@ -17,10 +17,10 @@ public abstract class AbstractJankBotCommand {
   protected Guild server;
   protected DiscordAudioManager discordAudioManager;
 
-  protected AbstractJankBotCommand() {
+  protected AbstractCommand() {
   };
 
-  protected AbstractJankBotCommand(Map<CommandOption, String> options, String arg, long userId,
+  protected AbstractCommand(Map<CommandOption, String> options, String arg, long userId,
       TextChannel textChannel, DiscordAudioManager discordAudioManager) {
     this.options = options;
     this.arg = arg;
@@ -31,6 +31,8 @@ public abstract class AbstractJankBotCommand {
   }
 
   public abstract void run();
+  
+  public abstract CommandType getType();
   
   protected Map<CommandOption, String> getOptions() {
     return options;

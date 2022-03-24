@@ -64,7 +64,4 @@ public class YoutubeSearch {
     return idTitleMap;
   }
 
-  public String getVideoUrl(String videoId) {
-    return "https://www.youtube.com/watch?v=" + videoId;
-  }
 }

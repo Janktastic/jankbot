@@ -13,7 +13,7 @@ public class JankBotCommandFactory {
 		this.commandPrefix = commandPrefix;
 	}
 
-	public AbstractJankBotCommand build(GuildMessageReceivedEvent event) {
+	public AbstractCommand build(GuildMessageReceivedEvent event) {
 		
 		String[] message = event.getMessage().getContentRaw().split(" ");
 		// if message isn't a command then return null;
@@ -27,14 +27,14 @@ public class JankBotCommandFactory {
 		// split the commandPrefix from the command
 		String commandString = message[0].split(commandPrefix)[1];
 
-		AbstractJankBotCommand command;
+		AbstractCommand command;
 		// handle shorthand search result play commands [0-9]
 		if (commandString.length() == 1 && Character.isDigit(commandString.charAt(0))) {
-			command = new AbstractJankBotCommand(CommandType.playSearchResult, null, null, userId, event.getChannel(), event.getGuild());
+			command = new AbstractCommand(CommandType.playSearchResult, null, null, userId, event.getChannel(), event.getGuild());
 			return command;
 		}
 
-		command = new AbstractJankBotCommand();
+		command = new AbstractCommand();
 		try {
 			CommandType type = CommandType.valueOf(commandString);
 			command.setType(type);

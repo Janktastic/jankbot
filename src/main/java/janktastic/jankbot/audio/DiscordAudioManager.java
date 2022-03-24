@@ -1,4 +1,4 @@
-package janktastic.jankbot;
+package janktastic.jankbot.audio;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import janktastic.jankbot.JankBotUtil;
 import janktastic.youtube.YoutubeSearch;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -20,12 +21,11 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 public class DiscordAudioManager {
-
   private final AudioPlayerManager lavaPlayerManager;
   //map of serverId to lava audio player
 	private final Map<Long, AudioPlayer> audioPlayerMap;
 	//map of serverId to audio queue manager
-	private final Map<Long, QueueManager> audioQueueMap;
+	private final Map<Long, AudioQueueManager> audioQueueMap;
 	
 	//map of discord userIds to their last search results
   private final Map<Long, List<String>> userSearchMap;
@@ -47,11 +47,11 @@ public class DiscordAudioManager {
       return;
     }
 
-    if (!JankBotStringUtil.isLink(playRequest)) {
+    if (!JankBotUtil.isLink(playRequest)) {
       SearchListResponse response = youtubeSearch.search(playRequest, 1);
       if (!response.getItems().isEmpty()) {
-        System.out.println(youtubeSearch.getVideoUrl(response.getItems().get(0).getId().getVideoId()));
-        playRequest = youtubeSearch.getVideoUrl(response.getItems().get(0).getId().getVideoId());
+        System.out.println(JankBotUtil.getYoutubeUrl(response.getItems().get(0).getId().getVideoId()));
+        playRequest = JankBotUtil.getYoutubeUrl(response.getItems().get(0).getId().getVideoId());
       }
 
     } else {
@@ -73,16 +73,6 @@ public class DiscordAudioManager {
     //store search results by userId
     userSearchMap.put(userId, new ArrayList<String>(idTitleMap.keySet()));
     return idTitleMap;
-    /*
-    textChannel.sendMessage("Search Results:\n").queue();
-    String results = "";
-    Iterator<String> iter = idTitleMap.values().iterator();
-    for (int i = 0; i < idTitleMap.size(); i++) {
-      results += Integer.toString(i) + ":\t\t" + iter.next() + "\n";
-    }
-
-    textChannel.sendMessage(results.isEmpty() ? "No results found." : codeblock(results) + "\nTo select a track use " + commandPrefix + "[0-9]").queue();
-    */
   }
   
   public void play(Guild guild, AudioTrack track, VoiceChannel voiceChannel) {
@@ -104,25 +94,16 @@ public class DiscordAudioManager {
     getAudioQueue(guild).clearQueue();
   }
 
-  private VoiceChannel findVoiceChannelOfUser(Guild guild, long userId) {
-    List<VoiceChannel> channels = guild.getVoiceChannels();
-    for (VoiceChannel channel : channels) {
-      List<Member> voiceChannelMembers = channel.getMembers();
-      for (Member voiceChannelMember : voiceChannelMembers) {
-        if (voiceChannelMember.getIdLong() == userId) {
-          return channel;
-        }
-      }
-    }
-    return null;
-  }
-
   public void connectToVoiceChannel(AudioManager audioManager, VoiceChannel voiceChannel) {
     if (!voiceChannel.equals(voiceChannel.getGuild().getAudioManager().getConnectedChannel())) {
       audioManager.openAudioConnection(voiceChannel);
     }
   }
 
+  public List<String> getLatestSearchResultForUser(Long userId) {
+    return userSearchMap.get(userId);
+  }
+  
   private synchronized AudioPlayer getAudioPlayer(Guild server) {
     long serverId = Long.parseLong(server.getId());
     AudioPlayer audioPlayer = audioPlayerMap.get(serverId);
@@ -135,11 +116,11 @@ public class DiscordAudioManager {
     return audioPlayer;
   }
   
-  private synchronized QueueManager getAudioQueue(Guild server) {
+  private synchronized AudioQueueManager getAudioQueue(Guild server) {
     long serverId = Long.parseLong(server.getId());
-    QueueManager queueManager = audioQueueMap.get(serverId);
+    AudioQueueManager queueManager = audioQueueMap.get(serverId);
     if (queueManager == null) {
-      queueManager = new QueueManager(getAudioPlayer(server));
+      queueManager = new AudioQueueManager(getAudioPlayer(server));
       audioQueueMap.put(serverId, queueManager);
     }
 
@@ -150,6 +131,5 @@ public class DiscordAudioManager {
 	private LavaPlayerSendHandler getSendHandler(Long serverId) {
 		return new LavaPlayerSendHandler(audioPlayerMap.get(serverId));
 	}
-	
 
 }

@@ -1,4 +1,4 @@
-package janktastic.jankbot;
+package janktastic.jankbot.audio;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class QueueManager extends AudioEventAdapter {
+public class AudioQueueManager extends AudioEventAdapter {
   private final AudioPlayer player;
   private final BlockingQueue<AudioTrack> queue;
 
-  public QueueManager(AudioPlayer player) {
+  public AudioQueueManager(AudioPlayer player) {
     this.player = player;
     this.queue = new LinkedBlockingQueue<>();
   }

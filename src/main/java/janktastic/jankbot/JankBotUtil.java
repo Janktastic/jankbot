@@ -1,6 +1,6 @@
 package janktastic.jankbot;
 
-public class JankBotStringUtil {
+public class JankBotUtil {
   
   //discord codeblock markup for pretty printing bot responses
   private static final String CODEBLOCK = "```";
@@ -16,5 +16,9 @@ public class JankBotStringUtil {
   //wraps string in discord codeblock markup ```text```
   public static String codeblock(String text) {
     return CODEBLOCK + text + CODEBLOCK;
+  }
+  
+  public static String getYoutubeUrl(String videoId) {
+    return "https://www.youtube.com/watch?v=" + videoId;
   }
 }

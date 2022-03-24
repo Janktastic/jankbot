@@ -1,4 +1,4 @@
-package janktastic.jankbot;
+package janktastic.jankbot.audio;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public class JankAudioLoadResultHandler implements AudioLoadResultHandler {
-	
   private String playRequest;
 	private TextChannel textChannel;
 	private VoiceChannel voiceChannel;

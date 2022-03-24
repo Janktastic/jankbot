@@ -2,7 +2,8 @@ package janktastic.jankbot;
 
 import java.util.List;
 
-import janktastic.jankbot.command.AbstractJankBotCommand;
+import janktastic.jankbot.audio.DiscordAudioManager;
+import janktastic.jankbot.command.AbstractCommand;
 import janktastic.jankbot.command.JankBotCommandFactory;
 import janktastic.jankbot.config.JankBotConfig;
 import janktastic.youtube.YoutubeSearch;
@@ -40,11 +41,11 @@ public ServerEventHandler(JankBotConfig jankBotConfig, YoutubeSearch youtubeSear
   //if command prefix detected attempt to execute the requested command
   @Override
   public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-	  AbstractJankBotCommand command = cmdFactory.build(event);
+	  AbstractCommand command = cmdFactory.build(event);
 	  if (command == null) {
 	    return;
 	  } else {
-	    //command.run();
+	    command.run();
 	  }
     super.onGuildMessageReceived(event);
   }
