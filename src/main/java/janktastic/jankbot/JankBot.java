@@ -32,7 +32,7 @@ public class JankBot {
 
     JDABuilder.create(discordToken, GUILD_MESSAGES, GUILD_VOICE_STATES, GUILD_MESSAGE_REACTIONS)
         .addEventListeners(new DiscordEventHandler(jankBotConfig, youtubeSearch))
-        .setMemberCachePolicy(MemberCachePolicy.ALL).setEnabledIntents(EnumSet.allOf(GatewayIntent.class))
+        .setMemberCachePolicy(MemberCachePolicy.ALL).setEnabledIntents(GatewayIntent.GUILD_MEMBERS)
         // disable jda cache for now to prevent warnings on startup
         .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS).build();
    
