@@ -12,7 +12,7 @@ import janktastic.youtube.YoutubeSearch;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
-public class Jankbot {
+public class JankBot {
   private static JankBotConfig jankBotConfig;
   private static String discordToken;
   private static YoutubeSearch youtubeSearch;
@@ -35,7 +35,7 @@ public class Jankbot {
 
   
   private static void printBotBanner() {
-    InputStream is = new Jankbot().getClass().getClassLoader().getResourceAsStream("banner");
+    InputStream is = new JankBot().getClass().getClassLoader().getResourceAsStream("banner");
     byte[] encoded;
     try {
       encoded = is.readAllBytes();
