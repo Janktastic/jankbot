@@ -5,11 +5,14 @@ import static net.dv8tion.jda.api.requests.GatewayIntent.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumSet;
 
 import janktastic.jankbot.config.JankBotConfig;
 import janktastic.jankbot.config.JankBotConfigFactory;
 import janktastic.youtube.YoutubeSearch;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class JankBot {
@@ -29,8 +32,10 @@ public class JankBot {
 
     JDABuilder.create(discordToken, GUILD_MESSAGES, GUILD_VOICE_STATES, GUILD_MESSAGE_REACTIONS)
         .addEventListeners(new DiscordEventHandler(jankBotConfig, youtubeSearch))
+        .setMemberCachePolicy(MemberCachePolicy.ALL).setEnabledIntents(EnumSet.allOf(GatewayIntent.class))
         // disable jda cache for now to prevent warnings on startup
         .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS).build();
+   
   }
 
   private static void printBotBanner() {
