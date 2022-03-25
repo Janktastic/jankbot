@@ -7,9 +7,9 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public abstract class AbstractPlayCommand extends AbstractCommand {
-  
+
   protected static final String INVALID_VOICE_CHANNEL = "You must be in a voice channel or specify a valid one to initiate playback.  I'll just scream your request into the void, I was already doing it anyways.";
-  
+
   protected VoiceChannel findVoiceChannelOfUser(Guild server, long userId) {
     List<VoiceChannel> channels = server.getVoiceChannels();
     for (VoiceChannel channel : channels) {
@@ -22,7 +22,7 @@ public abstract class AbstractPlayCommand extends AbstractCommand {
     }
     return null;
   }
-  
+
   protected VoiceChannel getVoiceChannel() {
     VoiceChannel voiceChannel = null;
     String requestedChannel = options.get(CommandOption.channel);
@@ -38,5 +38,5 @@ public abstract class AbstractPlayCommand extends AbstractCommand {
     }
     return voiceChannel;
   }
-  
+
 }

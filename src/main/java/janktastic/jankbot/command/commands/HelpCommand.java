@@ -13,8 +13,8 @@ public class HelpCommand extends AbstractCommand {
   @Override
   public void run() {
     //TODO: add the help string to each individual command and dynamically build this from command classes
-    //and build string once instead of each time help is run.  Probably when the factory is initialized.
-    
+    // and build string once instead of each time help is run. Probably when the factory is initialized.
+
     String format = "%-25s%-25s%n";
     String helpHeader = "**Please command me " + server.getMemberById(userId).getEffectiveName() + "-san :pleading_face:**";
     Map<String, String> commands = new LinkedHashMap<>();

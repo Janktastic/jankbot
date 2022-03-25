@@ -33,15 +33,15 @@ public class AudioQueueManager extends AudioEventAdapter {
     currentTrack = queue.poll();
     player.startTrack(currentTrack, false);
   }
-  
+
   public void stop() {
     player.stopTrack();
   }
 
   public void clearQueue() {
-	  queue.clear();
+    queue.clear();
   }
-  
+
   @Override
   public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
     if (endReason.mayStartNext) {
@@ -50,15 +50,16 @@ public class AudioQueueManager extends AudioEventAdapter {
       currentTrack = null;
     }
   }
-  
-  //try and skip age restriction videos that wont play (or recover from other unknown reasons track would be stuck)
+
+  // try and skip age restriction videos that wont play (or recover from other
+  // unknown reasons track would be stuck)
   @Override
   public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
     player.stopTrack();
     nextTrack();
   }
-  
-  //returns list of titles queued for displaying in channel
+
+  // returns list of titles queued for displaying in channel
   public List<String> getQueueTitles() {
     List<String> titleList = new ArrayList<String>();
     for (Iterator<AudioTrack> i = queue.iterator(); i.hasNext();) {
@@ -67,7 +68,7 @@ public class AudioQueueManager extends AudioEventAdapter {
     }
     return titleList;
   }
-  
+
   public AudioTrack getCurrentTrack() {
     return currentTrack;
   }

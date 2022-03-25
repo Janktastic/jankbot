@@ -4,7 +4,7 @@ import janktastic.jankbot.command.AbstractPlayCommand;
 import janktastic.jankbot.command.CommandType;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-public class PlayCommand extends AbstractPlayCommand{
+public class PlayCommand extends AbstractPlayCommand {
 
   @Override
   public void run() {
@@ -13,7 +13,7 @@ public class PlayCommand extends AbstractPlayCommand{
       textChannel.sendMessage(INVALID_VOICE_CHANNEL).queue();
       return;
     }
-    
+
     discordAudioManager.loadAndPlay(textChannel, arg, voiceChannel);
   }
 

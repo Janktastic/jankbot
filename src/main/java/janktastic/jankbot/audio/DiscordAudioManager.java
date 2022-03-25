@@ -21,26 +21,26 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 public class DiscordAudioManager {
   private final AudioPlayerManager lavaPlayerManager;
-  //map of serverId to lava audio player
-	private final Map<Long, AudioPlayer> audioPlayerMap;
-	//map of serverId to audio queue manager
-	private final Map<Long, AudioQueueManager> audioQueueMap;
-	
-	//map of discord userIds to their last search results
+  // map of serverId to lava audio player
+  private final Map<Long, AudioPlayer> audioPlayerMap;
+  // map of serverId to audio queue manager
+  private final Map<Long, AudioQueueManager> audioQueueMap;
+
+  // map of discord userIds to their last search results
   private final Map<Long, List<String>> userSearchMap;
-  
+
   private final YoutubeSearch youtubeSearch;
 
-	public DiscordAudioManager(YoutubeSearch youtubeSearch) {
-	  this.lavaPlayerManager = new DefaultAudioPlayerManager();
+  public DiscordAudioManager(YoutubeSearch youtubeSearch) {
+    this.lavaPlayerManager = new DefaultAudioPlayerManager();
     AudioSourceManagers.registerRemoteSources(lavaPlayerManager);
     AudioSourceManagers.registerLocalSource(lavaPlayerManager);
     this.youtubeSearch = youtubeSearch;
-	  audioPlayerMap = new HashMap<>();
-	  audioQueueMap = new HashMap<>();
-	  userSearchMap = new HashMap<>();
-	}
-	
+    audioPlayerMap = new HashMap<>();
+    audioQueueMap = new HashMap<>();
+    userSearchMap = new HashMap<>();
+  }
+
   public void loadAndPlay(final TextChannel textChannel, String playRequest, final VoiceChannel voiceChannel) {
     if (textChannel == null || playRequest == null || voiceChannel == null) {
       return;
@@ -56,24 +56,24 @@ public class DiscordAudioManager {
     } else {
       System.out.println(playRequest);
     }
-    
+
     JankAudioLoadResultHandler audioLoadHandler = new JankAudioLoadResultHandler(playRequest, this, textChannel, voiceChannel);
     lavaPlayerManager.loadItemOrdered(textChannel.getGuild().getIdLong(), playRequest, audioLoadHandler);
   }
-  
+
   public void leaveVoice(Guild guild) {
     AudioManager disscordServerAudioManager = guild.getAudioManager();
     disscordServerAudioManager.closeAudioConnection();
   }
-  
+
   public Map<String, String> search(final TextChannel textChannel, long userId, String playRequest) {
     SearchListResponse response = youtubeSearch.search(playRequest, 10);
     Map<String, String> idTitleMap = youtubeSearch.getIdTitleMap(response);
-    //store search results by userId
+    // store search results by userId
     userSearchMap.put(userId, new ArrayList<String>(idTitleMap.keySet()));
     return idTitleMap;
   }
-  
+
   public void play(Guild guild, AudioTrack track, VoiceChannel voiceChannel) {
     System.out.println("in play");
     System.out.println("channel: " + voiceChannel.getName());
@@ -102,12 +102,12 @@ public class DiscordAudioManager {
   public List<String> getLatestSearchResultForUser(Long userId) {
     return userSearchMap.get(userId);
   }
-  
+
   public AudioTrack getCurrentTrack(Guild server) {
     return getAudioQueue(server).getCurrentTrack();
   }
-  
-  private synchronized AudioPlayer getAudioPlayer(Guild server) {
+
+  public synchronized AudioPlayer getAudioPlayer(Guild server) {
     long serverId = Long.parseLong(server.getId());
     AudioPlayer audioPlayer = audioPlayerMap.get(serverId);
     if (audioPlayer == null) {
@@ -118,8 +118,8 @@ public class DiscordAudioManager {
 
     return audioPlayer;
   }
-  
-  private synchronized AudioQueueManager getAudioQueue(Guild server) {
+
+  public synchronized AudioQueueManager getAudioQueue(Guild server) {
     long serverId = Long.parseLong(server.getId());
     AudioQueueManager queueManager = audioQueueMap.get(serverId);
     if (queueManager == null) {
@@ -129,10 +129,9 @@ public class DiscordAudioManager {
 
     return queueManager;
   }
-  
-  
-	private LavaPlayerSendHandler getSendHandler(Long serverId) {
-		return new LavaPlayerSendHandler(audioPlayerMap.get(serverId));
-	}
+
+  private LavaPlayerSendHandler getSendHandler(Long serverId) {
+    return new LavaPlayerSendHandler(audioPlayerMap.get(serverId));
+  }
 
 }

@@ -16,7 +16,7 @@ public class JankBot {
   private static JankBotConfig jankBotConfig;
   private static String discordToken;
   private static YoutubeSearch youtubeSearch;
-  //default can be overridden by config
+  // default can be overridden by config
 
   public static void main(String[] args) throws Exception {
     // TODO: allow passing in config file path
@@ -33,7 +33,6 @@ public class JankBot {
         .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS).build();
   }
 
-  
   private static void printBotBanner() {
     InputStream is = new JankBot().getClass().getClassLoader().getResourceAsStream("banner");
     byte[] encoded;

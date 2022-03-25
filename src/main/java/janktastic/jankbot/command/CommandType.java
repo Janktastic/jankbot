@@ -8,5 +8,6 @@ public enum CommandType {
   clear,
   leave,
   help,
-  playSearchResult;
+  playSearchResult,
+  queue;
 }
