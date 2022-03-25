@@ -28,7 +28,7 @@ public class JankBot {
     System.out.println("Initializing JankBot...");
 
     JDABuilder.create(discordToken, GUILD_MESSAGES, GUILD_VOICE_STATES, GUILD_MESSAGE_REACTIONS)
-        .addEventListeners(new ServerEventHandler(jankBotConfig, youtubeSearch))
+        .addEventListeners(new DiscordEventHandler(jankBotConfig, youtubeSearch))
         // disable jda cache for now to prevent warnings on startup
         .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS).build();
   }
