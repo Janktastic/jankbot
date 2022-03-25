@@ -6,7 +6,7 @@ public enum CommandType {
   skip,
   stop,
   clear,
-  queue,
   leave,
+  help,
   playSearchResult;
 }

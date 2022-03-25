@@ -1,5 +1,9 @@
 package janktastic.jankbot.command.commands;
 
+import java.util.Iterator;
+import java.util.Map;
+
+import janktastic.jankbot.JankBotUtil;
 import janktastic.jankbot.command.AbstractCommand;
 import janktastic.jankbot.command.CommandType;
 
@@ -14,8 +18,7 @@ public class SearchCommand extends AbstractCommand {
     for (int i = 0; i < idTitleMap.size(); i++) {
       results += Integer.toString(i) + ":\t\t" + iter.next() + "\n";
     }
-
-    textChannel.sendMessage(results.isEmpty() ? "No results found." : codeblock(results) + "\nTo select a track use " + commandPrefix + "[0-9]").queue();
+    textChannel.sendMessage(results.isEmpty() ? "No results found." : JankBotUtil.codeblock(results) + "\nTo select a track use " + commandPrefix + "[0-9]").queue();
   }
 
   @Override

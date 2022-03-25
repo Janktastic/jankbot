@@ -21,7 +21,7 @@ public class ServerEventHandler extends ListenerAdapter {
 public ServerEventHandler(JankBotConfig jankBotConfig, YoutubeSearch youtubeSearch) {
   this.jankBotConfig = jankBotConfig;
   this.discordAudioManager = new DiscordAudioManager(youtubeSearch);
-  cmdFactory = new JankBotCommandFactory(jankBotConfig.getCommandPrefix());
+  cmdFactory = new JankBotCommandFactory(discordAudioManager, jankBotConfig.getCommandPrefix());
 }
 
   

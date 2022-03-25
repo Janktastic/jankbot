@@ -16,6 +16,7 @@ public class Jankbot {
   private static JankBotConfig jankBotConfig;
   private static String discordToken;
   private static YoutubeSearch youtubeSearch;
+  //default can be overridden by config
 
   public static void main(String[] args) throws Exception {
     // TODO: allow passing in config file path

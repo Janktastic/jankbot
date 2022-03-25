@@ -16,19 +16,9 @@ public abstract class AbstractCommand {
   //the server the command was executed in
   protected Guild server;
   protected DiscordAudioManager discordAudioManager;
-
-  protected AbstractCommand() {
-  };
-
-  protected AbstractCommand(Map<CommandOption, String> options, String arg, long userId,
-      TextChannel textChannel, DiscordAudioManager discordAudioManager) {
-    this.options = options;
-    this.arg = arg;
-    this.userId = userId;
-    this.textChannel = textChannel;
-    this.server = textChannel.getGuild();
-    this.discordAudioManager = discordAudioManager;
-  }
+  protected String commandPrefix;
+  
+  protected AbstractCommand() {};
 
   public abstract void run();
   
@@ -80,5 +70,13 @@ public abstract class AbstractCommand {
 
   protected void setDiscordAudioManager(DiscordAudioManager discordAudioManager) {
     this.discordAudioManager = discordAudioManager;
+  }
+
+  public String getCommandPrefix() {
+    return commandPrefix;
+  }
+
+  public void setCommandPrefix(String commandPrefix) {
+    this.commandPrefix = commandPrefix;
   }
 }
