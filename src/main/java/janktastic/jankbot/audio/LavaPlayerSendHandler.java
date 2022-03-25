@@ -34,8 +34,7 @@ public class LavaPlayerSendHandler implements AudioSendHandler {
     return buffer;
   }
 
-  // youtube already provides audio in opus format, tell jda it doesnt need to
-  // encode
+  // youtube already provides audio in opus format, tell jda it doesnt need to encode
   @Override
   public boolean isOpus() {
     return true;
