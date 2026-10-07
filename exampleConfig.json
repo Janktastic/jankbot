@@ -1,5 +1,8 @@
 {
     "discordBotToken": "foobar",
     "googleApiKey" : "foobar",
-    "commandPrefix": "!"
+    "commandPrefix": "!",
+    "remoteCipherUrl": null,
+    "remoteCipherPassword": null,
+    "youtubeOauthRefreshToken": null
 }

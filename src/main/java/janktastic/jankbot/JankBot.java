@@ -7,6 +7,10 @@ import static net.dv8tion.jda.api.requests.GatewayIntent.MESSAGE_CONTENT;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,25 +18,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-
-import dev.lavalink.youtube.YoutubeAudioSourceManager;
-import dev.lavalink.youtube.clients.AndroidVr;
-import dev.lavalink.youtube.clients.Music;
-import dev.lavalink.youtube.clients.TvHtml5Simply;
-import dev.lavalink.youtube.clients.Web;
-import dev.lavalink.youtube.clients.WebEmbedded;
-import dev.lavalink.youtube.clients.skeleton.Client;
 
 import janktastic.jankbot.config.JankBotConfig;
 import janktastic.jankbot.config.JankBotConfigFactory;
 import janktastic.youtube.YoutubeSearch;
 import club.minnced.discord.jdave.interop.JDaveSessionFactory;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.entities.Guild;
@@ -65,6 +63,10 @@ public class JankBot extends ListenerAdapter {
   //discord codeblock markup for pretty printing bot responses
   private static final String CODEBLOCK = "```";
 
+  //status file read by the docker healthcheck and deploy/update.sh (to avoid restarting mid-song)
+  private static final Path STATUS_FILE = Paths.get(System.getenv().getOrDefault("JANKBOT_STATUS_FILE", "/tmp/jankbot-status"));
+  private final ScheduledExecutorService statusWriter = Executors.newSingleThreadScheduledExecutor();
+
   public static void main(String[] args) throws Exception {
     //TODO: allow passing in config file path
     jankBotConfig = JankBotConfigFactory.buildConfig();
@@ -88,14 +90,7 @@ public class JankBot extends ListenerAdapter {
     commandPrefix = jankBotConfig.getCommandPrefix();
     this.musicManagers = new HashMap<>();
 
-    this.playerManager = new DefaultAudioPlayerManager();
-    //lavaplayer's built-in youtube source is broken, use youtube-source instead
-    YoutubeAudioSourceManager youtubeSourceManager = new YoutubeAudioSourceManager(true,
-        new Client[] { new Music(), new AndroidVr(), new Web(), new WebEmbedded(), new TvHtml5Simply() });
-    playerManager.registerSourceManager(youtubeSourceManager);
-    AudioSourceManagers.registerRemoteSources(playerManager,
-        com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
-    AudioSourceManagers.registerLocalSource(playerManager);
+    this.playerManager = AudioSetup.createPlayerManager(jankBotConfig);
   }
   
   @Override
@@ -106,6 +101,26 @@ public class JankBot extends ListenerAdapter {
     //print server list to track who's added JankBot
     for (Guild guild : guilds) {
       System.out.println(guild.getName());
+    }
+
+    JDA jda = event.getJDA();
+    statusWriter.scheduleAtFixedRate(() -> writeStatus(jda), 0, 30, TimeUnit.SECONDS);
+  }
+
+  //writes connection status and number of guilds currently playing music
+  private void writeStatus(JDA jda) {
+    long playing;
+    synchronized (this) {
+      playing = musicManagers.values().stream().filter(m -> m.getPlayer().getPlayingTrack() != null).count();
+    }
+    String status = "status=" + jda.getStatus() + "\nplaying=" + playing + "\n";
+    try {
+      //write then rename so readers never see a partial file
+      Path tmp = STATUS_FILE.resolveSibling(STATUS_FILE.getFileName() + ".tmp");
+      Files.write(tmp, status.getBytes(StandardCharsets.UTF_8));
+      Files.move(tmp, STATUS_FILE, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+    } catch (IOException e) {
+      System.out.println("Failed to write status file: " + e.getMessage());
     }
   }
   //returns the queue/player container for a guild(server) and sets the JDA SendingHandler to the guild specific lavaplayer sendhandler
@@ -250,6 +265,7 @@ public class JankBot extends ListenerAdapter {
     }
 
     final GuildMusicManager musicManager = getGuildAudioPlayer(textChannel.getGuild());
+    musicManager.getQueueManager().setTextChannel(textChannel);
     JankAudioLoadResultHandler audioLoadHandler = new JankAudioLoadResultHandler(this, playRequest, musicManager, textChannel,
         voiceChannel);
     playerManager.loadItemOrdered(musicManager, playRequest, audioLoadHandler);

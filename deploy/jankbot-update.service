@@ -1,0 +1,14 @@
+[Unit]
+Description=Update, smoke test and deploy jankbot
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=jankbot
+WorkingDirectory=/home/jankbot/jankbot
+# GH_TOKEN=<fine-grained token for the jankbot repo>
+EnvironmentFile=/home/jankbot/.config/jankbot-updater.env
+ExecStart=/home/jankbot/jankbot/deploy/update.sh
+# waiting for music to stop can take up to 2 hours
+TimeoutStartSec=3h

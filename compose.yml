@@ -1,0 +1,21 @@
+# images are built and tagged by deploy/update.sh:
+#   jankbot:current / jankbot:previous, jankbot-yt-cipher:current / jankbot-yt-cipher:previous
+services:
+  jankbot:
+    image: jankbot:current
+    restart: unless-stopped
+    depends_on:
+      - yt-cipher
+    environment:
+      JANKBOT_REMOTE_CIPHER_URL: http://yt-cipher:8001
+      JANKBOT_REMOTE_CIPHER_PASSWORD: ${CIPHER_TOKEN:?set CIPHER_TOKEN in .env}
+      JANKBOT_YOUTUBE_CLIENTS: ${JANKBOT_YOUTUBE_CLIENTS:-}
+    volumes:
+      - ./config.json:/config/config.json:ro
+
+  yt-cipher:
+    image: jankbot-yt-cipher:current
+    restart: unless-stopped
+    environment:
+      OVERRIDE_PLAYER_VARIANT: IAS
+      API_TOKEN: ${CIPHER_TOKEN:?set CIPHER_TOKEN in .env}

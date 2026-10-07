@@ -3,3 +3,5 @@ config.json
 .classpath
 .project
 .settings
+.env
+*~

@@ -11,7 +11,7 @@ public class GuildMusicManager {
 
 	public GuildMusicManager(AudioPlayerManager manager) {
 		player = manager.createPlayer();
-		queueManager = new QueueManager(player);
+		queueManager = new QueueManager(player, manager);
 		player.addListener(queueManager);
 	}
 	
