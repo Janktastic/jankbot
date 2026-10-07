@@ -36,19 +36,11 @@ pct enter 120
 
 ## 2. Install Docker, gh and git (inside the container, as root)
 
+Everything comes from Debian's own repositories, so there are no extra apt sources or keys to maintain.
+
 ```sh
 apt update && apt full-upgrade -y
-apt install -y ca-certificates curl git openssl
-
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /etc/apt/keyrings/githubcli.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
-  > /etc/apt/sources.list.d/docker.list
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" \
-  > /etc/apt/sources.list.d/github-cli.list
-apt update
-apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin gh
+apt install -y docker.io docker-cli docker-compose docker-buildx gh git curl openssl
 
 docker run --rm hello-world     # confirms Docker works inside the LXC
 ```
@@ -97,7 +89,8 @@ nano config.json                # discordBotToken, googleApiKey, commandPrefix
 
 mkdir -p ~/.config
 echo 'GH_TOKEN=github_pat_...' > ~/.config/jankbot-updater.env
-chmod 600 .env config.json ~/.config/jankbot-updater.env
+chmod 600 .env ~/.config/jankbot-updater.env
+chmod 644 config.json           # read inside the containers, which run as a different user
 ```
 
 ### Optional: YouTube login for age restricted videos

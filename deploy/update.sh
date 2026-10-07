@@ -86,7 +86,9 @@ cleanup() {
   docker images jankbot --format '{{.Repository}}:{{.Tag}}' | grep -v ':current$' | xargs -r docker rmi >/dev/null 2>&1 || true
   # removes those and old yt-cipher images (images used by containers are kept)
   docker image prune -f >/dev/null 2>&1 || true
-  docker builder prune -f --max-used-space 2gb >/dev/null 2>&1 || true
+  # --max-used-space replaced --keep-storage in newer docker, debian's docker.io only has the old flag
+  docker builder prune -f --max-used-space 2gb >/dev/null 2>&1 \
+    || docker builder prune -f --keep-storage 2gb >/dev/null 2>&1 || true
 }
 
 # --- build + smoke test ---
