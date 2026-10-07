@@ -3,11 +3,16 @@
 jankbot runs as a Docker Compose stack (bot + [yt-cipher](https://github.com/kikkia/yt-cipher)) inside a Proxmox LXC container.
 `deploy/update.sh` runs hourly from a systemd timer and keeps YouTube playback working:
 
-- tests every new youtube-source release, and falls back to the latest youtube-source `main` snapshot when the deployed version and the release are both broken
-- only deploys versions that pass a real playback smoke test (`janktastic.jankbot.SmokeTest`), and waits for music to stop first
+- tests every new youtube-source release, and deploys it if it passes a real playback smoke test (`janktastic.jankbot.SmokeTest`)
+- re-tests the deployed version daily, and falls back to the latest youtube-source `main` snapshot when it's broken
 - records every version change as an auto-merged PR, so `master` always matches what is deployed
-- redeploys when you push to `master`
 - opens a `youtube-broken` GitHub issue when nothing works, and closes it once playback recovers
+
+Deploys also pull the latest yt-cipher image. Code you push to `master` is deployed with the next version change, or right away with:
+
+```sh
+docker build -t jankbot:current . && docker compose up -d
+```
 
 ## 1. Create the container (on the Proxmox host)
 

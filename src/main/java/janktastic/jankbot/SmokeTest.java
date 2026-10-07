@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -79,14 +80,25 @@ public class SmokeTest {
     AudioTrack track = loaded.get(30, TimeUnit.SECONDS);
 
     AudioPlayer player = playerManager.createPlayer();
+    //stop waiting as soon as playback fails instead of waiting out the deadline
+    CompletableFuture<FriendlyException> failure = new CompletableFuture<>();
+    player.addListener(new AudioEventAdapter() {
+      @Override
+      public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+        failure.complete(exception);
+      }
+    });
     try {
       player.playTrack(track);
       int frames = 0;
       long deadline = System.currentTimeMillis() + 30000;
-      while (frames < REQUIRED_FRAMES && System.currentTimeMillis() < deadline) {
+      while (frames < REQUIRED_FRAMES && System.currentTimeMillis() < deadline && !failure.isDone()) {
         if (player.provide(100, TimeUnit.MILLISECONDS) != null) {
           frames++;
         }
+      }
+      if (failure.isDone()) {
+        throw failure.getNow(null);
       }
       if (frames < REQUIRED_FRAMES) {
         throw new IllegalStateException("only decoded " + frames + "/" + REQUIRED_FRAMES + " audio frames");
