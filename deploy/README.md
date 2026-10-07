@@ -25,7 +25,7 @@ pct create 120 local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst \
   --hostname jankbot \
   --unprivileged 1 --features nesting=1,keyctl=1 \
   --cores 2 --memory 2048 --swap 512 \
-  --rootfs local-lvm:16 \
+  --rootfs local-lvm:7 \
   --net0 name=eth0,bridge=vmbr0,ip=dhcp \
   --onboot 1 --password
 pct start 120

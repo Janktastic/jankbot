@@ -48,6 +48,7 @@ exec 9>"$STATE_DIR/lock"
 flock -n 9 || { log "another update is running, exiting"; exit 0; }
 
 cd "$REPO_DIR"
+trap cleanup EXIT
 [ -f .env ] || die ".env missing, copy .env.example and set CIPHER_TOKEN"
 set -a; . ./.env; set +a
 [ -n "${CIPHER_TOKEN:-}" ] || die "CIPHER_TOKEN not set in .env"
@@ -76,6 +77,16 @@ recently_failed() {
   local failed_at
   failed_at="$(state_get "failed-$1")"
   [ -n "$failed_at" ] && [ $(( $(now) - failed_at )) -lt "$RETRY_FAILED_AFTER" ]
+}
+
+# keeps disk use flat: each run builds/pulls images and grows the build cache
+cleanup() {
+  [ "$DRY_RUN" = 1 ] && return
+  # untag test builds of other versions, the running version stays tagged jankbot:current
+  docker images jankbot --format '{{.Repository}}:{{.Tag}}' | grep -v ':current$' | xargs -r docker rmi >/dev/null 2>&1 || true
+  # removes those and old yt-cipher images (images used by containers are kept)
+  docker image prune -f >/dev/null 2>&1 || true
+  docker builder prune -f --max-used-space 2gb >/dev/null 2>&1 || true
 }
 
 # --- build + smoke test ---
