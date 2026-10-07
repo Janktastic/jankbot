@@ -7,18 +7,18 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 public class JankAudioLoadResultHandler implements AudioLoadResultHandler {
 	
-	private TextChannel textChannel;
+	private GuildMessageChannel textChannel;
 	private VoiceChannel voiceChannel;
 	private GuildMusicManager musicManager;
 	private JankBot bot;
 	private String trackUrl;
 	
-	public JankAudioLoadResultHandler(JankBot bot, String trackUrl, GuildMusicManager musicManager, TextChannel textChannel, VoiceChannel voiceChannel) {
+	public JankAudioLoadResultHandler(JankBot bot, String trackUrl, GuildMusicManager musicManager, GuildMessageChannel textChannel, VoiceChannel voiceChannel) {
 		this.bot = bot;
 		this.trackUrl = trackUrl;
 		this.musicManager = musicManager;

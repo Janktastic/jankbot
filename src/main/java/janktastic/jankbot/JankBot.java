@@ -2,6 +2,7 @@ package janktastic.jankbot;
 
 import static net.dv8tion.jda.api.requests.GatewayIntent.GUILD_MESSAGES;
 import static net.dv8tion.jda.api.requests.GatewayIntent.GUILD_VOICE_STATES;
+import static net.dv8tion.jda.api.requests.GatewayIntent.MESSAGE_CONTENT;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,25 +15,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Nonnull;
-
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import dev.lavalink.youtube.YoutubeAudioSourceManager;
+import dev.lavalink.youtube.clients.AndroidVr;
+import dev.lavalink.youtube.clients.Music;
+import dev.lavalink.youtube.clients.TvHtml5Simply;
+import dev.lavalink.youtube.clients.Web;
+import dev.lavalink.youtube.clients.WebEmbedded;
+import dev.lavalink.youtube.clients.skeleton.Client;
+
 import janktastic.jankbot.config.JankBotConfig;
 import janktastic.jankbot.config.JankBotConfigFactory;
 import janktastic.youtube.YoutubeSearch;
+import club.minnced.discord.jdave.interop.JDaveSessionFactory;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.VoiceChannel;
-import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -62,9 +71,14 @@ public class JankBot extends ListenerAdapter {
     youtubeSearch = new YoutubeSearch(jankBotConfig.getGoogleApiKey());
     discordToken = jankBotConfig.getDiscordBotToken();
 
-    JDABuilder.create(discordToken, GUILD_MESSAGES, GUILD_VOICE_STATES).addEventListeners(new JankBot())
+    //MESSAGE_CONTENT is a privileged intent, it must also be enabled in the discord developer portal
+    JDABuilder.create(discordToken, GUILD_MESSAGES, GUILD_VOICE_STATES, MESSAGE_CONTENT).addEventListeners(new JankBot())
+    //discord requires DAVE (end to end encryption) for voice connections
+      .setAudioModuleConfig(new AudioModuleConfig().withDaveSessionFactory(new JDaveSessionFactory()))
     //disable jda cache for now to prevent warnings on startup
-      .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS).build();
+      .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOJI, CacheFlag.STICKER, CacheFlag.CLIENT_STATUS,
+          CacheFlag.ONLINE_STATUS, CacheFlag.SCHEDULED_EVENTS, CacheFlag.SOUNDBOARD_SOUNDS)
+      .build();
   }
 
 
@@ -75,7 +89,12 @@ public class JankBot extends ListenerAdapter {
     this.musicManagers = new HashMap<>();
 
     this.playerManager = new DefaultAudioPlayerManager();
-    AudioSourceManagers.registerRemoteSources(playerManager);
+    //lavaplayer's built-in youtube source is broken, use youtube-source instead
+    YoutubeAudioSourceManager youtubeSourceManager = new YoutubeAudioSourceManager(true,
+        new Client[] { new Music(), new AndroidVr(), new Web(), new WebEmbedded(), new TvHtml5Simply() });
+    playerManager.registerSourceManager(youtubeSourceManager);
+    AudioSourceManagers.registerRemoteSources(playerManager,
+        com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
     AudioSourceManagers.registerLocalSource(playerManager);
   }
   
@@ -107,7 +126,10 @@ public class JankBot extends ListenerAdapter {
   //called when bot notices a new message sent in a guild (server)
   //if command prefix detected attempt to execute the requested command
   @Override
-  public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+  public void onMessageReceived(MessageReceivedEvent event) {
+    if (!event.isFromGuild()) {
+      return;
+    }
     String[] message = event.getMessage().getContentRaw().split(" ", 2);
     
     //is the first part of the message a command?
@@ -123,7 +145,7 @@ public class JankBot extends ListenerAdapter {
 
       User user = event.getAuthor();
       long userId = user.getIdLong();
-      TextChannel textChannel = event.getChannel();
+      GuildMessageChannel textChannel = event.getGuildChannel();
       VoiceChannel voiceChannel = findVoiceChannelOfUser(event.getGuild(), userId);
 
       System.out.println(args.size());
@@ -156,10 +178,10 @@ public class JankBot extends ListenerAdapter {
       }
     }
 
-    super.onGuildMessageReceived(event);
+    super.onMessageReceived(event);
   }
 
-  public void printQueue(TextChannel textChannel) {
+  public void printQueue(GuildMessageChannel textChannel) {
     final GuildMusicManager musicManager = getGuildAudioPlayer(textChannel.getGuild());
     List<String> songTitles = musicManager.getQueueManager().getQueueTitles();
     String header = "Currently Queued:\n";
@@ -175,7 +197,7 @@ public class JankBot extends ListenerAdapter {
     audioManager.closeAudioConnection();
   }
   
-  public void printHelp(TextChannel textChannel, String user) {
+  public void printHelp(GuildMessageChannel textChannel, String user) {
     String format = "%-25s%-25s%n";
     String helpHeader = "**Please command me " + user + "-san :pleading_face:**";
     Map<String, String> commands = new LinkedHashMap<>();
@@ -195,7 +217,7 @@ public class JankBot extends ListenerAdapter {
     textChannel.sendMessage(helpHeader + "\n" + codeblock(helpMsg)).queue();
   }
 
-  public void search(final TextChannel textChannel, long userId, String playRequest) {
+  public void search(final GuildMessageChannel textChannel, long userId, String playRequest) {
     SearchListResponse response = youtubeSearch.search(playRequest);
     Map<String, String> idTitleMap = youtubeSearch.getIdTitleMap(response);
     //store search results by userId
@@ -209,7 +231,7 @@ public class JankBot extends ListenerAdapter {
 
     textChannel.sendMessage(results.isEmpty() ? "No results found." : codeblock(results) + "\nTo select a track use " + commandPrefix + "[0-9]").queue();
   }
-  public void loadAndPlay(final TextChannel textChannel, String playRequest, final VoiceChannel voiceChannel) {
+  public void loadAndPlay(final GuildMessageChannel textChannel, String playRequest, final VoiceChannel voiceChannel) {
     if (voiceChannel == null) {
       System.out.println("no channel");
       textChannel.sendMessage("You must be in a voice channel to initiate playback.").queue();
@@ -241,21 +263,21 @@ public class JankBot extends ListenerAdapter {
     musicManager.getQueueManager().queue(track);
   }
 
-  public void skipTrack(TextChannel channel) {
+  public void skipTrack(GuildMessageChannel channel) {
     GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.getQueueManager().nextTrack();
 
     channel.sendMessage("Skipped to next track.").queue();
   }
 
-  public void stopPlayback(TextChannel channel) {
+  public void stopPlayback(GuildMessageChannel channel) {
     GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.getQueueManager().stop();
 
     channel.sendMessage("Playback stopped.").queue();
   }
 
-  public void emptyQueue(TextChannel channel) {
+  public void emptyQueue(GuildMessageChannel channel) {
     GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.getQueueManager().clearQueue();
     channel.sendMessage("Playback queue cleared.").queue();
