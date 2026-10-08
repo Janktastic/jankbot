@@ -2,8 +2,7 @@
 	 ║├─┤│││├┴┐╠╩╗│ │ │ 
 	╚╝┴ ┴┘└┘┴ ┴╚═╝└─┘ ┴ 
 
-Discord music bot using JDA and LavaPlayer.
-Initially based off of LavaPlayer's JDA Integration Demo
-(https://github.com/sedmelluq/lavaplayer/tree/master/demo-jda)
-
+Very simple discord music bot using JDA and LavaPlayer.
 Pour one out for groovy.
+Uses yt-cipher to adjust for changes on youtube's end
+Includes auto update script to bump youtube-source dependency to prevent breakage with auto rollback.
